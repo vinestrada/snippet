@@ -3,6 +3,9 @@
 __author__ = "Alvin Estrada"
 __copyright__ = "Free-for-all"
 __license__ = "GPL"
+
+TODO : create a web interface?
+
 """
 import os
 import sys
