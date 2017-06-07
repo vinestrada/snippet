@@ -20,20 +20,20 @@ def scrapper(url, fn=None, write_it=None):
     soup = BeautifulSoup(urlopen(URL).read(), 'html.parser')
     target_elements = soup.findAll('div', attrs={'data-tn-component': 'organicJob'})
 
-    for x in target_elements:
-        company = x.find('span', attrs={"itemprop":"name"})
+    for ele in target_elements:
+        company = ele.find('span', attrs={"itemprop":"name"})
         if company:
           print ('company:', company.text.strip())
 
-        job = x.find('a', attrs={'data-tn-element': "jobTitle"})
+        job = ele.find('a', attrs={'data-tn-element': "jobTitle"})
         if job:
           print ('job:', job.text.strip())
 
-        href = x.find('a', attrs={'class':'turnstileLink'})['href']
+        href = ele.find('a', attrs={'class':'turnstileLink'})['href']
         job_link = "%s%s" % (home_url, href)
         print  ('job link: ', job_link)
 
-        salary = x.find('nobr')
+        salary = ele.find('nobr')
         if salary:
           print ('salary:', salary.text.strip())
 
@@ -59,12 +59,12 @@ if __name__ == '__main__':
         jobs = sys.argv[1:]
 
     location = "melbourne"
-    home_url = "http://www.indeed.com"
+    home_url = "https://au.indeed.com"
     page_number = "&start="
 
     pg_num = [0, 10, 20, 30, 40, 50]
     for p in pg_num:
-        URL = "https://au.indeed.com/jobs?q=%s&l=%s" % (jobs, location)
+        URL = "%s/jobs?q=%s&l=%s" % (home_url, jobs, location)
         if p == 0:
             page_number = ""
         else:
@@ -73,5 +73,5 @@ if __name__ == '__main__':
         URL = URL + page_number
         print("Page %i" % p)
 
-        # lets start scrapping  
+        # lets start scrapping
         scrapper(url=URL)
