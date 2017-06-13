@@ -1,4 +1,8 @@
 
 *.txt
+*.csv
+
 
 .venv/
+
+autrain.py

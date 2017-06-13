@@ -3,6 +3,10 @@ import sys
 from urllib.request import urlopen, Request
 from urllib.parse import urlparse, urljoin
 
+from pprint import pprint
+import csv
+from datetime import datetime
+
 # Make sure we have install BeautifulSoup
 # pip install bs4
 try:
@@ -17,28 +21,50 @@ def scrapper(url, fn=None, write_it=None):
     """ scraper
     Scrape the current pages for job details
     """
+    now = datetime.now()
+
+    if fn == None: fn = "jb_scrapy.csv"
+
+    current_path = os.getcwd()
+    csv_file = "%s/%s.csv" % (current_path, fn)
+
+    if os.path.exists(csv_file) and os.path.getsize(csv_file) > 0:
+        fileptr = csv.writer(open(csv_file, "a"))
+    else:
+        fileptr = csv.writer(open(csv_file, "a"))
+        fileptr.writerow(['job', 'company', 'salary', 'url', 'date_when_scrape'])
+
+
     soup = BeautifulSoup(urlopen(URL).read(), 'html.parser')
     target_elements = soup.findAll('div', attrs={'data-tn-component': 'organicJob'})
 
     for ele in target_elements:
         company = ele.find('span', attrs={"itemprop":"name"})
-        if company:
-          print ('company:', company.text.strip())
+        if company != None:
+           company = company.text.strip()
+        else: company = ""
 
         job = ele.find('a', attrs={'data-tn-element': "jobTitle"})
-        if job:
-          print ('job:', job.text.strip())
+        if job != None:
+           job = job.text.strip()
+        else: job = ""
 
         href = ele.find('a', attrs={'class':'turnstileLink'})['href']
-        job_link = "%s%s" % (home_url, href)
-        print  ('job link: ', job_link)
+        if href != None:
+           job_link = "%s%s" % (home_url, href)
+        else: job_link = ""
 
         salary = ele.find('nobr')
-        if salary:
-          print ('salary:', salary.text.strip())
+        if salary != None:
+           salary = salary.text.strip()
+        else: salary = ""
+
+        # write to csv
+        fileptr.writerow([job, company, salary, job_link, str(now)])
 
 
-        print ('----------')
+
+
 
 """ I like it like this....
 How to use:
@@ -56,8 +82,9 @@ if __name__ == '__main__':
 
     jobs  = "python"
     if (sys.argv[1:]):
-        jobs = sys.argv[1:]
+        jobs = sys.argv[1]
 
+    print(jobs)
     location = "melbourne"
     home_url = "https://au.indeed.com"
     page_number = "&start="
@@ -74,4 +101,5 @@ if __name__ == '__main__':
         print("Page %i" % p)
 
         # lets start scrapping
-        scrapper(url=URL)
+        scrapper(url=URL,
+                 fn = jobs)
