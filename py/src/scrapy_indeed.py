@@ -34,8 +34,8 @@ def scrapper(url, fn=None, write_it=None):
         fileptr = csv.writer(open(csv_file, "a"))
         fileptr.writerow(['job', 'company', 'salary', 'url', 'date_when_scrape'])
 
-
-    soup = BeautifulSoup(urlopen(URL).read(), 'html.parser')
+    # ?? Is there a better way of doing this
+    soup = BeautifulSoup(urlopen(url).read(), 'html.parser')
     target_elements = soup.findAll('div', attrs={'data-tn-component': 'organicJob'})
 
     for ele in target_elements:
@@ -65,18 +65,34 @@ def scrapper(url, fn=None, write_it=None):
 
 
 
+def do_scrapy(url, job_keyword, location='None' ,sorted_by='date' ,page_number=11):
+
+    start_page = "&start="
+
+    # include the job keywords we want to scrap
+    base_url = "%s%s" % (url, job_keyword)
+
+    if location != None: base_url += "&l=%s" % location
+
+    base_url += "&sort=%s" % (sorted_by)   # &fromage=last sort by date, priorty new job bosted
+    base_url += start_page
+
+    for page in range(1, page_number):   # loop through 10 pages
+        page = (page -1) * 10   # indeed display in lots of 10s
+
+        this_url = "%s%d" % (base_url, page)
+        print(this_url)
+
+        # lets start scrapping
+        scrapper(url = this_url,
+                 fn = job_keyword)
+
 
 """ I like it like this....
 How to use:
     python scrapy_indeed.py
     python scrapy_indeed.py "keywords"
 
-    if you want to write the result to a file
-    python scrapy_indeed.py "keywords" > <target_filename>
-
-To Do:
-   1. Add location in the argv
-   2. Add writing to a file
 """
 if __name__ == '__main__':
 
@@ -84,22 +100,11 @@ if __name__ == '__main__':
     if (sys.argv[1:]):
         jobs = sys.argv[1]
 
-    print(jobs)
     location = "melbourne"
-    home_url = "https://au.indeed.com"
-    page_number = "&start="
+    home_url = "https://au.indeed.com/jobs?q="
 
-    pg_num = [0, 10, 20, 30, 40, 50]
-    for p in pg_num:
-        URL = "%s/jobs?q=%s&l=%s" % (home_url, jobs, location)
-        if p == 0:
-            page_number = ""
-        else:
-            page_number = "&start=%i" % p
-
-        URL = URL + page_number
-        print("Page %i" % p)
-
-        # lets start scrapping
-        scrapper(url=URL,
-                 fn = jobs)
+    do_scrapy(url = home_url,
+              job_keyword = jobs,
+              location='Melbourne',
+              sorted_by='date',
+              page_number=11)
